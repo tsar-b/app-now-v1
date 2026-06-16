@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { fetchCollection } from '../connectors/mongoApi.js';
 import { filterApproved } from '../transform/approval.js';
 import { transformRecords } from '../transform/recordTransformer.js';
+import { assertValidTransformedRecords } from '../validation/recordValidator.js';
 import { log } from '../lib/logger.js';
 
 export async function runExport(config) {
@@ -19,6 +20,7 @@ export async function runExport(config) {
     const raw = await fetchCollection(config, collection);
     const approved = filterApproved(raw, collection);
     const transformed = transformRecords(approved, collection);
+    assertValidTransformedRecords(collection, transformed);
 
     await writeJson(join(outputDir, `${collection.name}.raw.json`), raw);
     await writeJson(join(outputDir, `${collection.name}.approved.json`), approved);
@@ -30,6 +32,7 @@ export async function runExport(config) {
       rawCount: raw.length,
       approvedCount: approved.length,
       transformedCount: transformed.length,
+      requiredFields: collection.requiredFields ?? [],
       files: {
         raw: `${collection.name}.raw.json`,
         approved: `${collection.name}.approved.json`,
