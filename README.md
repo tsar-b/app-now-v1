@@ -28,6 +28,8 @@ APPNOW_DRY_RUN=true
 
 Edit `appnow.config.json` to match your source endpoints and Supabase tables.
 
+Do not commit `.env`. It is ignored by Git.
+
 ## Commands
 
 ```bash
@@ -38,8 +40,8 @@ npm run migrate
 ```
 
 - `check`: verifies config and required environment variables.
-- `export`: calls the Mongo API, filters approved records, writes JSON.
-- `upload`: uploads previously transformed JSON to Supabase.
+- `export`: calls the Mongo API, filters approved records, validates required fields, writes JSON.
+- `upload`: validates previously transformed JSON, then uploads it to Supabase.
 - `migrate`: export + upload in one command.
 
 Keep `APPNOW_DRY_RUN=true` until the JSON output looks correct.
@@ -78,6 +80,42 @@ If a collection has no approval rule, AppNow uses conservative defaults:
 - `approved === true`
 - `status` is one of `approved`, `confirmed`, `active`, `확정`, `완료`
 
+## Required Fields
+
+Each collection can declare transformed fields that must exist before export/upload continues:
+
+```json
+{
+  "requiredFields": ["id", "reservation_date", "status"]
+}
+```
+
+Validation runs twice:
+
+1. During `export`, after records are transformed.
+2. During `upload`, before records are sent to Supabase.
+
+This prevents bad mappings from silently creating incomplete Supabase rows.
+
+## Secrets
+
+Safe to commit:
+
+- `.env.example`
+- fake URLs
+- config shape
+- source endpoint paths
+- Supabase table names
+
+Do not commit or paste publicly:
+
+- `MONGO_API_TOKEN`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- production MongoDB connection strings
+- any JWT or admin token
+
+The Supabase project URL is usually not highly secret, but keep it in `.env` anyway so environments can change cleanly. The service role key is the dangerous one.
+
 ## What This Proves
 
 This proves the AppNow foundation without scope creep:
@@ -86,6 +124,7 @@ This proves the AppNow foundation without scope creep:
 - approval filtering
 - JSON artifact generation
 - transformation rules
+- validation before upload
 - target connector
 - repeatable migration runs
 
