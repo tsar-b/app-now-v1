@@ -1,0 +1,50 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fetchCollection } from '../connectors/mongoApi.js';
+import { filterApproved } from '../transform/approval.js';
+import { transformRecords } from '../transform/recordTransformer.js';
+import { log } from '../lib/logger.js';
+
+export async function runExport(config) {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const outputDir = join(config.paths.outputDir, timestamp);
+  await mkdir(outputDir, { recursive: true });
+
+  const manifest = {
+    createdAt: new Date().toISOString(),
+    collections: []
+  };
+
+  for (const collection of config.collections) {
+    const raw = await fetchCollection(config, collection);
+    const approved = filterApproved(raw, collection);
+    const transformed = transformRecords(approved, collection);
+
+    await writeJson(join(outputDir, `${collection.name}.raw.json`), raw);
+    await writeJson(join(outputDir, `${collection.name}.approved.json`), approved);
+    await writeJson(join(outputDir, `${collection.name}.supabase.json`), transformed);
+
+    manifest.collections.push({
+      name: collection.name,
+      supabaseTable: collection.supabaseTable,
+      rawCount: raw.length,
+      approvedCount: approved.length,
+      transformedCount: transformed.length,
+      files: {
+        raw: `${collection.name}.raw.json`,
+        approved: `${collection.name}.approved.json`,
+        supabase: `${collection.name}.supabase.json`
+      }
+    });
+
+    log.info(`${collection.name}: raw=${raw.length}, approved=${approved.length}, transformed=${transformed.length}`);
+  }
+
+  await writeJson(join(outputDir, 'manifest.json'), manifest);
+  log.info(`Export complete: ${outputDir}`);
+  return { outputDir, manifest };
+}
+
+async function writeJson(path, data) {
+  await writeFile(path, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
+}
