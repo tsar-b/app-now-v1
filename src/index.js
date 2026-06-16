@@ -2,6 +2,7 @@ import { loadConfig } from './lib/config.js';
 import { runExport } from './pipeline/exportApproved.js';
 import { runUpload } from './pipeline/uploadSupabase.js';
 import { checkProject } from './pipeline/checkProject.js';
+import { probeNodes } from './pipeline/probeNodes.js';
 import { log } from './lib/logger.js';
 
 const command = process.argv[2] ?? 'check';
@@ -11,6 +12,11 @@ async function main() {
 
   if (command === 'check') {
     await checkProject(config);
+    return;
+  }
+
+  if (command === 'probe') {
+    await probeNodes(config);
     return;
   }
 

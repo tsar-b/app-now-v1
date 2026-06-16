@@ -1,13 +1,23 @@
 import { log } from '../lib/logger.js';
+import { getSourceKind } from '../connectors/source.js';
 
 export async function checkProject(config) {
   log.info(`Config: ${config.paths.configPath}`);
   log.info(`Output: ${config.paths.outputDir}`);
   log.info(`Collections: ${config.collections.map((item) => item.name).join(', ')}`);
 
-  const sourceBaseUrlEnv = config.source?.baseUrlEnv ?? 'MONGO_API_BASE_URL';
-  reportEnv(sourceBaseUrlEnv, true);
-  reportEnv(config.source?.tokenEnv ?? 'MONGO_API_TOKEN', false);
+  const sourceKind = getSourceKind(config);
+  log.info(`Source kind: ${sourceKind}`);
+
+  if (sourceKind === 'mongodb') {
+    reportEnv(config.source?.uriEnv ?? 'MONGO_URI', true);
+    reportEnv('MONGO_DATABASE', false);
+  } else {
+    const sourceBaseUrlEnv = config.source?.baseUrlEnv ?? 'MONGO_API_BASE_URL';
+    reportEnv(sourceBaseUrlEnv, true);
+    reportEnv(config.source?.tokenEnv ?? 'MONGO_API_TOKEN', false);
+  }
+
   reportEnv('SUPABASE_URL', false);
   reportEnv('SUPABASE_SERVICE_ROLE_KEY', false);
 

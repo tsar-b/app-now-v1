@@ -2,9 +2,37 @@ import { log } from '../lib/logger.js';
 
 const DEFAULT_BATCH_SIZE = 100;
 
-export async function upsertIntoSupabase(collection, records, options = {}) {
+export async function probeSupabaseTable(collection) {
   const supabaseUrl = readEnv('SUPABASE_URL');
   const serviceRoleKey = readEnv('SUPABASE_SERVICE_ROLE_KEY');
+  const table = collection.supabaseTable;
+
+  if (!table) {
+    throw new Error(`Collection ${collection.name} is missing supabaseTable.`);
+  }
+
+  const url = new URL(`/rest/v1/${encodeURIComponent(table)}`, supabaseUrl);
+  url.searchParams.set('select', '*');
+  url.searchParams.set('limit', '1');
+
+  const response = await fetch(url, {
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      accept: 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Supabase probe failed for ${table}: ${response.status} ${body}`);
+  }
+
+  const data = await response.json();
+  return { sampleRows: Array.isArray(data) ? data.length : 0 };
+}
+
+export async function upsertIntoSupabase(collection, records, options = {}) {
   const table = collection.supabaseTable;
   const batchSize = collection.batchSize ?? DEFAULT_BATCH_SIZE;
 
@@ -16,6 +44,9 @@ export async function upsertIntoSupabase(collection, records, options = {}) {
     log.warn(`Dry run: would upload ${records.length} records to Supabase table ${table}.`);
     return { uploaded: 0, dryRun: true };
   }
+
+  const supabaseUrl = readEnv('SUPABASE_URL');
+  const serviceRoleKey = readEnv('SUPABASE_SERVICE_ROLE_KEY');
 
   let uploaded = 0;
   for (let index = 0; index < records.length; index += batchSize) {
