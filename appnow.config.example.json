@@ -16,6 +16,7 @@
         "values": [true]
       },
       "primaryKey": "_id",
+      "requiredFields": ["id", "name"],
       "mapping": {
         "id": "_id",
         "legacy_user_id": "userId",
@@ -37,6 +38,7 @@
         "values": ["approved", "confirmed", "확정", "완료"]
       },
       "primaryKey": "_id",
+      "requiredFields": ["id", "reservation_date", "reservation_time", "status"],
       "mapping": {
         "id": "_id",
         "legacy_user_id": "user",
