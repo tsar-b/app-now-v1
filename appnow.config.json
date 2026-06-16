@@ -1,0 +1,52 @@
+{
+  "source": {
+    "baseUrlEnv": "MONGO_API_BASE_URL",
+    "tokenEnv": "MONGO_API_TOKEN",
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer"
+  },
+  "collections": [
+    {
+      "name": "users",
+      "sourcePath": "/api/admin/users",
+      "supabaseTable": "users",
+      "approval": {
+        "mode": "field",
+        "field": "isApproved",
+        "values": [true]
+      },
+      "primaryKey": "_id",
+      "mapping": {
+        "id": "_id",
+        "legacy_user_id": "userId",
+        "name": "name",
+        "phone": "phone",
+        "email": "email",
+        "provider": "provider",
+        "is_admin": "isAdmin",
+        "created_at": "createdAt"
+      }
+    },
+    {
+      "name": "bookings",
+      "sourcePath": "/api/admin/bookings",
+      "supabaseTable": "bookings",
+      "approval": {
+        "mode": "field",
+        "field": "status",
+        "values": ["approved", "confirmed", "확정", "완료"]
+      },
+      "primaryKey": "_id",
+      "mapping": {
+        "id": "_id",
+        "legacy_user_id": "user",
+        "name": "name",
+        "reservation_date": "reservationDate",
+        "reservation_time": "reservationTime",
+        "status": "status",
+        "total_price": "totalPrice",
+        "created_at": "createdAt"
+      }
+    }
+  ]
+}
