@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { upsertIntoSupabase } from '../connectors/supabaseRest.js';
+import { assertValidTransformedRecords } from '../validation/recordValidator.js';
 import { log } from '../lib/logger.js';
 
 export async function runUpload(config, outputDir = null) {
@@ -10,6 +11,8 @@ export async function runUpload(config, outputDir = null) {
   for (const collection of config.collections) {
     const file = join(selectedDir, `${collection.name}.supabase.json`);
     const records = JSON.parse(await readFile(file, 'utf8'));
+    assertValidTransformedRecords(collection, records);
+
     const result = await upsertIntoSupabase(collection, records, {
       dryRun: config.runtime.dryRun
     });
