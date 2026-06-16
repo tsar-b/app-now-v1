@@ -1,0 +1,17 @@
+{
+  "name": "appnow-v1",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Developer-first Mongo API to JSON to Supabase migration pipeline.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "export": "node src/index.js export",
+    "upload": "node src/index.js upload",
+    "migrate": "node src/index.js migrate",
+    "check": "node src/index.js check"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
