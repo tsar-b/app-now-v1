@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
-import { HttpError } from '../../core/errors';
-import { supabaseAdmin } from '../../db/supabaseAdmin';
+import { HttpError } from '../../core/errors.js';
+import { supabaseAdmin } from '../../db/supabaseAdmin.js';
 
 const ALLOWED_TABLES = new Set([
   'users',
@@ -15,18 +15,19 @@ const ALLOWED_TABLES = new Set([
 ]);
 
 export async function listRows(req: Request, res: Response) {
-  const table = assertTable(req.params.table);
+  const table = assertTable(paramValue(req.params.table));
   const { data, error } = await supabaseAdmin.from(table).select('*').limit(500);
   if (error) throw new HttpError(400, error.message, 'ADMIN_LIST_FAILED');
   res.json(data);
 }
 
 export async function updateRow(req: Request, res: Response) {
-  const table = assertTable(req.params.table);
+  const table = assertTable(paramValue(req.params.table));
+  const rowId = paramValue(req.params.id);
   const { data, error } = await supabaseAdmin
     .from(table)
     .update(req.body)
-    .eq('id', req.params.id)
+    .eq('id', rowId)
     .select('*')
     .single();
 
@@ -35,8 +36,9 @@ export async function updateRow(req: Request, res: Response) {
 }
 
 export async function deleteRow(req: Request, res: Response) {
-  const table = assertTable(req.params.table);
-  const { error } = await supabaseAdmin.from(table).delete().eq('id', req.params.id);
+  const table = assertTable(paramValue(req.params.table));
+  const rowId = paramValue(req.params.id);
+  const { error } = await supabaseAdmin.from(table).delete().eq('id', rowId);
   if (error) throw new HttpError(400, error.message, 'ADMIN_DELETE_FAILED');
   res.json({ ok: true });
 }
@@ -46,4 +48,8 @@ function assertTable(table: string) {
     throw new HttpError(404, 'Unknown admin table', 'UNKNOWN_TABLE');
   }
   return table;
+}
+
+function paramValue(value: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
 }

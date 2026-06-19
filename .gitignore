@@ -1,6 +1,7 @@
 # AppNow local files
 node_modules/
 .npm-cache/
+dist/
 .env
 .env.*
 !.env.example

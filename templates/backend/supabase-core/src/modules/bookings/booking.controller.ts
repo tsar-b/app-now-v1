@@ -1,13 +1,23 @@
 import type { Request, Response } from 'express';
-import { HttpError } from '../../core/errors';
-import { supabaseAdmin } from '../../db/supabaseAdmin';
+import { HttpError } from '../../core/errors.js';
+import { supabaseAdmin } from '../../db/supabaseAdmin.js';
 
 export async function createBooking(req: Request, res: Response) {
   const payload = {
-    ...req.body,
+    asset_id: req.body.asset_id ?? null,
+    service_type: req.body.service_type ?? null,
+    subtype: req.body.subtype ?? null,
+    name: req.body.name,
+    phone: req.body.phone ?? null,
+    address: req.body.address ?? null,
+    detail_address: req.body.detail_address ?? null,
+    reservation_date: req.body.reservation_date,
+    reservation_time: req.body.reservation_time,
+    memo: req.body.memo ?? null,
+    total_price: req.body.total_price ?? null,
     user_id: req.user!.id,
     legacy_user_id: req.user!.legacyUserId ?? null,
-    status: req.body.status ?? '대기'
+    status: '대기'
   };
 
   const { data, error } = await supabaseAdmin.from('bookings').insert(payload).select('*').single();

@@ -51,6 +51,7 @@ Use `appnow.mongo.config.example.json` as the starting point for direct MongoDB 
 npm run check
 npm run probe
 npm run db:automation
+npm run backend:blueprint
 npm run export
 npm run upload
 npm run migrate
@@ -59,6 +60,7 @@ npm run migrate
 - `check`: verifies config and required environment variables.
 - `probe`: checks source collections and, when a service key exists, Supabase target tables.
 - `db:automation`: generates Supabase table SQL, starter RLS SQL, and seed/import plan.
+- `backend:blueprint`: generates backend module guidance and an OpenAPI starter from the AppNow config.
 - `export`: calls the Mongo API, filters approved records, validates required fields, writes JSON.
 - `upload`: validates previously transformed JSON, then uploads it to Supabase.
 - `migrate`: export + upload in one command.

@@ -1,15 +1,12 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { env } from '../../core/env';
-import { HttpError } from '../../core/errors';
-import { supabaseAdmin } from '../../db/supabaseAdmin';
+import { env } from '../../core/env.js';
+import { HttpError } from '../../core/errors.js';
+import { supabaseAdmin } from '../../db/supabaseAdmin.js';
 
 export async function register(req: Request, res: Response) {
   const { name, phone, email, password, provider = 'standard' } = req.body;
-  if (!name || !email || !password) {
-    throw new HttpError(400, 'name, email and password are required', 'VALIDATION_ERROR');
-  }
 
   const passwordHash = await bcrypt.hash(password, 10);
   const { data, error } = await supabaseAdmin
@@ -24,9 +21,6 @@ export async function register(req: Request, res: Response) {
 
 export async function login(req: Request, res: Response) {
   const { email, password } = req.body;
-  if (!email || !password) {
-    throw new HttpError(400, 'email and password are required', 'VALIDATION_ERROR');
-  }
 
   const { data: user, error } = await supabaseAdmin
     .from('users')

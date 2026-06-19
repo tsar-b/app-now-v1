@@ -8,6 +8,7 @@
     "start": "node src/index.js",
     "probe": "node src/index.js probe",
     "db:automation": "node src/index.js db:automation",
+    "backend:blueprint": "node src/index.js backend:blueprint",
     "export": "node src/index.js export",
     "upload": "node src/index.js upload",
     "migrate": "node src/index.js migrate",

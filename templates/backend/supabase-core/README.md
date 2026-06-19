@@ -23,12 +23,17 @@ src/
     env.ts
     errors.ts
     http.ts
+    logger.ts
+    security.ts
   db/
     supabaseClient.ts
     supabaseAdmin.ts
   middleware/
     authMiddleware.ts
     adminMiddleware.ts
+    idempotencyMiddleware.ts
+    requestContext.ts
+    validate.ts
   modules/
     auth/
     users/
@@ -39,6 +44,8 @@ src/
       kakao/
   routes/
     index.ts
+  openapi/
+    openapi.ts
 ```
 
 ## Core Rule
@@ -50,3 +57,19 @@ MongoDB is only for:
 - legacy migration
 - compatibility import
 - source-of-truth comparison during transition
+
+## Production Defaults
+
+The template starts with:
+
+- env validation
+- Helmet security headers
+- CORS allowlist
+- rate limiting
+- request IDs and structured logging
+- centralized error responses
+- OpenAPI JSON endpoint
+- Zod validation helpers
+- optional idempotency keys for mutation endpoints
+
+Keep `SUPABASE_SERVICE_ROLE_KEY` on the backend only. Frontend code should use Supabase anon access plus RLS policies, or call this backend for trusted operations.

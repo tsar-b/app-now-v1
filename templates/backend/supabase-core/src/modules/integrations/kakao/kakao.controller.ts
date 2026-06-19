@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
-import { HttpError } from '../../../core/errors';
-import { env } from '../../../core/env';
+import { HttpError } from '../../../core/errors.js';
+import { env } from '../../../core/env.js';
 
 export async function searchKakaoAddress(req: Request, res: Response) {
   const query = String(req.query.query ?? '').trim();

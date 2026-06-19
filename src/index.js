@@ -4,6 +4,7 @@ import { runUpload } from './pipeline/uploadSupabase.js';
 import { checkProject } from './pipeline/checkProject.js';
 import { probeNodes } from './pipeline/probeNodes.js';
 import { createDatabaseAutomation } from './automation/databaseAutomation.js';
+import { createBackendBlueprint } from './automation/backendBlueprint.js';
 import { log } from './lib/logger.js';
 
 const command = process.argv[2] ?? 'check';
@@ -11,6 +12,11 @@ const command = process.argv[2] ?? 'check';
 async function main() {
   if (command === 'db:automation') {
     await createDatabaseAutomation();
+    return;
+  }
+
+  if (command === 'backend:blueprint') {
+    await createBackendBlueprint();
     return;
   }
 
