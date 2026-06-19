@@ -3,11 +3,17 @@ import { runExport } from './pipeline/exportApproved.js';
 import { runUpload } from './pipeline/uploadSupabase.js';
 import { checkProject } from './pipeline/checkProject.js';
 import { probeNodes } from './pipeline/probeNodes.js';
+import { createDatabaseAutomation } from './automation/databaseAutomation.js';
 import { log } from './lib/logger.js';
 
 const command = process.argv[2] ?? 'check';
 
 async function main() {
+  if (command === 'db:automation') {
+    await createDatabaseAutomation();
+    return;
+  }
+
   const config = await loadConfig();
 
   if (command === 'check') {
