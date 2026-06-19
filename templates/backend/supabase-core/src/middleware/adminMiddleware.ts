@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { HttpError } from '../core/errors';
+import { HttpError } from '../core/errors.js';
 
 export function requireAdmin(req: Request, _res: Response, next: NextFunction) {
   if (!req.user?.isAdmin) {

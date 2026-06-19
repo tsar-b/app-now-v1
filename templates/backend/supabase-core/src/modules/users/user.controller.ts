@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
-import { HttpError } from '../../core/errors';
-import { supabaseAdmin } from '../../db/supabaseAdmin';
+import { HttpError } from '../../core/errors.js';
+import { supabaseAdmin } from '../../db/supabaseAdmin.js';
 
 export async function getMe(req: Request, res: Response) {
   const { data, error } = await supabaseAdmin

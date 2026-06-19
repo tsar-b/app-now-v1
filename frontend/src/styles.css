@@ -100,6 +100,7 @@ button {
 .nav-item,
 .ghost-button,
 .primary-button,
+.secondary-button,
 .text-button {
   display: inline-flex;
   align-items: center;
@@ -242,6 +243,24 @@ button {
   color: #ffffff;
 }
 
+.secondary-button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #344054;
+  font-weight: 800;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.action-spacer {
+  margin-top: 16px;
+}
+
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 368px;
@@ -317,6 +336,11 @@ h2 {
   font-weight: 800;
 }
 
+.run-health.muted {
+  background: #f2f4f7;
+  color: #475467;
+}
+
 .panel {
   padding: 18px;
   border: 1px solid var(--line);
@@ -360,9 +384,9 @@ h2 {
 }
 
 .field input,
-.field select {
+.field select,
+.field textarea {
   width: 100%;
-  height: 40px;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0 11px;
@@ -371,11 +395,80 @@ h2 {
   outline: 0;
 }
 
+.field input,
+.field select {
+  height: 40px;
+}
+
+.field textarea {
+  min-height: 78px;
+  padding: 9px 11px;
+  resize: vertical;
+}
+
 .field input:focus,
 .field select:focus,
+.field textarea:focus,
 .searchbox:focus-within {
   border-color: rgba(37, 99, 235, 0.6);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.stacked-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.backend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.connection-card {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  min-height: 118px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-soft);
+}
+
+.connection-card > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.connection-card strong {
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.connection-card p {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.wide-card {
+  grid-column: 1 / -1;
+  min-height: 86px;
+}
+
+.spin {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .switch-row {
@@ -708,8 +801,13 @@ h2 {
 
   .template-grid,
   .form-grid,
+  .backend-grid,
   .right-column {
     grid-template-columns: 1fr;
+  }
+
+  .wide-card {
+    grid-column: auto;
   }
 
   h1 {

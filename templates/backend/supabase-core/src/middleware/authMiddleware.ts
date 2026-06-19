@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { env } from '../core/env';
-import { HttpError } from '../core/errors';
+import { env } from '../core/env.js';
+import { HttpError } from '../core/errors.js';
 
 export type AuthUser = {
   id: string;

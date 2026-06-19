@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Blocks,
@@ -10,21 +10,35 @@ import {
   FileCode2,
   GitBranch,
   Globe2,
+  KeyRound,
   LayoutDashboard,
+  Loader2,
   MonitorSmartphone,
   Play,
   Search,
+  Send,
+  Server,
   Settings2,
   Smartphone,
   Sparkles,
   TerminalSquare,
   Wand2,
 } from 'lucide-react';
+import {
+  API_BASE_URL,
+  checkHealth,
+  createBooking,
+  loadCatalog,
+  login,
+  type ApiError,
+  type CatalogResponse,
+} from './api';
 import './styles.css';
 
 type Locale = 'en' | 'ko';
 type Platform = 'web' | 'mobile' | 'both';
 type TemplateId = 'smart-homecare' | 'starter-crm' | 'service-booking';
+type RequestState = 'idle' | 'loading' | 'success' | 'error';
 
 const copy = {
   en: {
@@ -39,7 +53,8 @@ const copy = {
     language: 'Language',
     platform: 'Platform',
     provider: 'AI provider',
-    generate: 'Generate App',
+    generate: 'Probe Backend',
+    submitDraft: 'Send Draft',
     preview: 'Preview',
     settings: 'Build Settings',
     branch: 'GitHub branch',
@@ -56,12 +71,23 @@ const copy = {
     webApp: 'Web app',
     mobileApp: 'Mobile app',
     both: 'Web + Mobile',
+    backend: 'Backend',
+    backendOnline: 'Backend online',
+    backendOffline: 'Backend offline',
+    catalog: 'Catalog',
+    catalogLoaded: 'Catalog loaded',
+    login: 'Login',
+    authToken: 'Auth token',
+    email: 'Email',
+    password: 'Password',
+    draft: 'Draft Request',
+    apiBase: 'API base',
   },
   ko: {
-    nav: ['생성', '템플릿', '생성된 앱', '실행'],
+    nav: ['생성', '템플릿', '생성 앱', '실행'],
     search: '프로젝트, 템플릿, 브랜치 검색',
     title: '검증된 템플릿으로 앱 만들기',
-    subtitle: '지금은 개발자용, 나중에는 고객에게도 깔끔하게.',
+    subtitle: '지금은 개발자용. 나중에는 고객에게도 깔끔하게.',
     create: '앱 생성',
     template: '템플릿',
     appName: '앱 이름',
@@ -69,7 +95,8 @@ const copy = {
     language: '언어',
     platform: '플랫폼',
     provider: 'AI 제공자',
-    generate: '앱 생성',
+    generate: '백엔드 확인',
+    submitDraft: '초안 전송',
     preview: '미리보기',
     settings: '빌드 설정',
     branch: 'GitHub 브랜치',
@@ -86,6 +113,17 @@ const copy = {
     webApp: '웹 앱',
     mobileApp: '모바일 앱',
     both: '웹 + 모바일',
+    backend: '백엔드',
+    backendOnline: '백엔드 연결됨',
+    backendOffline: '백엔드 연결 안 됨',
+    catalog: '카탈로그',
+    catalogLoaded: '카탈로그 로드됨',
+    login: '로그인',
+    authToken: '인증 토큰',
+    email: '이메일',
+    password: '비밀번호',
+    draft: '요청 초안',
+    apiBase: 'API 주소',
   },
 };
 
@@ -119,13 +157,6 @@ const templates = [
   },
 ];
 
-const steps = [
-  { label: 'Read template source', state: 'done' },
-  { label: 'Extract screens and API map', state: 'active' },
-  { label: 'Generate clean project', state: 'queued' },
-  { label: 'Open preview', state: 'queued' },
-];
-
 function App() {
   const [locale, setLocale] = useState<Locale>('en');
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('smart-homecare');
@@ -134,12 +165,103 @@ function App() {
   const [market, setMarket] = useState('Korea + Global');
   const [englishFirst, setEnglishFirst] = useState(true);
   const [koreanReady, setKoreanReady] = useState(true);
+  const [healthState, setHealthState] = useState<RequestState>('idle');
+  const [catalogState, setCatalogState] = useState<RequestState>('idle');
+  const [draftState, setDraftState] = useState<RequestState>('idle');
+  const [authState, setAuthState] = useState<RequestState>('idle');
+  const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
+  const [authToken, setAuthToken] = useState('');
+  const [email, setEmail] = useState('admin@appnow.local');
+  const [password, setPassword] = useState('');
+  const [statusMessage, setStatusMessage] = useState('Waiting for backend connection.');
   const t = copy[locale];
 
   const template = useMemo(
     () => templates.find((item) => item.id === selectedTemplate) ?? templates[0],
     [selectedTemplate],
   );
+
+  const languageMode = englishFirst && koreanReady ? 'en-first-ko-ready' : englishFirst ? 'en-only' : 'ko-first';
+
+  useEffect(() => {
+    void handleHealthCheck(false);
+  }, []);
+
+  async function handleHealthCheck(showSuccess = true) {
+    setHealthState('loading');
+    try {
+      await checkHealth();
+      setHealthState('success');
+      if (showSuccess) setStatusMessage('Backend /health is responding.');
+    } catch (error) {
+      setHealthState('error');
+      setStatusMessage(formatApiError(error, 'Backend is not reachable yet.'));
+    }
+  }
+
+  async function handleCatalogLoad() {
+    setCatalogState('loading');
+    try {
+      const nextCatalog = await loadCatalog();
+      setCatalog(nextCatalog);
+      setCatalogState('success');
+      setStatusMessage('Catalog endpoint loaded from the backend template.');
+    } catch (error) {
+      setCatalogState('error');
+      setStatusMessage(formatApiError(error, 'Catalog endpoint failed.'));
+    }
+  }
+
+  async function handleLogin() {
+    setAuthState('loading');
+    try {
+      const response = await login(email, password);
+      setAuthToken(response.token);
+      setAuthState('success');
+      setStatusMessage('Login succeeded. Token is ready for booking requests.');
+    } catch (error) {
+      setAuthState('error');
+      setStatusMessage(formatApiError(error, 'Login failed.'));
+    }
+  }
+
+  async function handleDraftSubmit() {
+    if (!authToken.trim()) {
+      setDraftState('error');
+      setStatusMessage('Paste a JWT or login before sending a booking draft.');
+      return;
+    }
+
+    setDraftState('loading');
+    try {
+      await createBooking(
+        {
+          app_name: appName,
+          template_id: selectedTemplate,
+          market,
+          platform,
+          language_mode: languageMode,
+          source: template.source,
+          status: 'pending',
+        },
+        authToken.trim(),
+      );
+      setDraftState('success');
+      setStatusMessage('Draft request reached /api/bookings.');
+    } catch (error) {
+      setDraftState('error');
+      setStatusMessage(formatApiError(error, 'Draft request failed.'));
+    }
+  }
+
+  const catalogCount = catalog
+    ? catalog.subtypes.length +
+      catalog.options.length +
+      catalog.pricings.length +
+      catalog.assets.length +
+      catalog.timeSlots.length +
+      catalog.serviceTypes.length
+    : 0;
 
   return (
     <main className="app-shell">
@@ -182,15 +304,19 @@ function App() {
           </label>
           <div className="topbar-actions">
             <div className="segmented" role="group" aria-label="Language">
-              <button className={locale === 'en' ? 'selected' : ''} onClick={() => setLocale('en')}>EN</button>
-              <button className={locale === 'ko' ? 'selected' : ''} onClick={() => setLocale('ko')}>KR</button>
+              <button className={locale === 'en' ? 'selected' : ''} onClick={() => setLocale('en')}>
+                EN
+              </button>
+              <button className={locale === 'ko' ? 'selected' : ''} onClick={() => setLocale('ko')}>
+                KR
+              </button>
             </div>
-            <button className="ghost-button">
+            <button className="ghost-button" onClick={() => window.open('https://github.com/tsar-b/app-now-v1', '_blank')}>
               <ExternalLink size={17} />
               <span>GitHub</span>
             </button>
-            <button className="primary-button">
-              <Play size={17} />
+            <button className="primary-button" onClick={() => handleHealthCheck()}>
+              {healthState === 'loading' ? <Loader2 className="spin" size={17} /> : <Server size={17} />}
               <span>{t.generate}</span>
             </button>
           </div>
@@ -204,9 +330,9 @@ function App() {
                 <h1>{t.title}</h1>
                 <p>{t.subtitle}</p>
               </div>
-              <div className="run-health">
+              <div className={healthState === 'success' ? 'run-health' : 'run-health muted'}>
                 <CheckCircle2 size={19} />
-                <span>Template core connected</span>
+                <span>{healthState === 'success' ? t.backendOnline : t.backendOffline}</span>
               </div>
             </div>
 
@@ -287,7 +413,11 @@ function App() {
                 {templates.map((item) => (
                   <button
                     key={item.id}
-                    className={item.id === selectedTemplate ? `template-tile selected ${item.accent}` : `template-tile ${item.accent}`}
+                    className={
+                      item.id === selectedTemplate
+                        ? `template-tile selected ${item.accent}`
+                        : `template-tile ${item.accent}`
+                    }
                     onClick={() => setSelectedTemplate(item.id)}
                   >
                     <span className="template-topline">
@@ -299,6 +429,36 @@ function App() {
                     <span className="template-source">{item.source}</span>
                   </button>
                 ))}
+              </div>
+            </section>
+
+            <section className="panel integration-panel" aria-labelledby="backend-heading">
+              <div className="panel-heading compact">
+                <div>
+                  <p className="eyebrow">{t.backend}</p>
+                  <h2 id="backend-heading">Supabase Core Template</h2>
+                </div>
+                <Server size={18} />
+              </div>
+
+              <div className="backend-grid">
+                <div className="connection-card">
+                  <span>{t.apiBase}</span>
+                  <strong>{API_BASE_URL}</strong>
+                  <button className="secondary-button" onClick={handleCatalogLoad}>
+                    {catalogState === 'loading' ? <Loader2 className="spin" size={16} /> : <Database size={16} />}
+                    {t.catalog}
+                  </button>
+                </div>
+                <div className="connection-card">
+                  <span>{t.catalogLoaded}</span>
+                  <strong>{catalogCount} records</strong>
+                  <p>subtypes, options, pricings, assets, time slots, service types</p>
+                </div>
+                <div className="connection-card wide-card">
+                  <span>Latest API message</span>
+                  <strong>{statusMessage}</strong>
+                </div>
               </div>
             </section>
           </section>
@@ -336,13 +496,46 @@ function App() {
               </div>
             </section>
 
-            <section className="panel" aria-labelledby="settings-heading">
+            <section className="panel" aria-labelledby="auth-heading">
               <div className="panel-heading compact">
                 <div>
-                  <p className="eyebrow">{t.settings}</p>
-                  <h2 id="settings-heading">{template.name}</h2>
+                  <p className="eyebrow">{t.login}</p>
+                  <h2 id="auth-heading">{t.authToken}</h2>
                 </div>
-                <Settings2 size={18} />
+                <KeyRound size={18} />
+              </div>
+              <div className="stacked-fields">
+                <label className="field">
+                  <span>{t.email}</span>
+                  <input value={email} onChange={(event) => setEmail(event.target.value)} />
+                </label>
+                <label className="field">
+                  <span>{t.password}</span>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Backend test password"
+                  />
+                </label>
+                <button className="secondary-button full-width" onClick={handleLogin}>
+                  {authState === 'loading' ? <Loader2 className="spin" size={16} /> : <KeyRound size={16} />}
+                  {t.login}
+                </button>
+                <label className="field">
+                  <span>{t.authToken}</span>
+                  <textarea value={authToken} onChange={(event) => setAuthToken(event.target.value)} />
+                </label>
+              </div>
+            </section>
+
+            <section className="panel" aria-labelledby="draft-heading">
+              <div className="panel-heading compact">
+                <div>
+                  <p className="eyebrow">{t.draft}</p>
+                  <h2 id="draft-heading">{template.name}</h2>
+                </div>
+                <Send size={18} />
               </div>
               <dl className="meta-list">
                 <div>
@@ -355,9 +548,15 @@ function App() {
                 </div>
                 <div>
                   <dt>{t.targetUsers}</dt>
-                  <dd>{t.developers} → {t.publicLater}</dd>
+                  <dd>
+                    {t.developers} / {t.publicLater}
+                  </dd>
                 </div>
               </dl>
+              <button className="primary-button full-width action-spacer" onClick={handleDraftSubmit}>
+                {draftState === 'loading' ? <Loader2 className="spin" size={17} /> : <Send size={17} />}
+                <span>{t.submitDraft}</span>
+              </button>
             </section>
 
             <section className="panel" aria-labelledby="workflow-heading">
@@ -369,7 +568,12 @@ function App() {
                 <Sparkles size={18} />
               </div>
               <ol className="step-list">
-                {steps.map((step) => (
+                {[
+                  { label: 'Read template source', state: 'done' },
+                  { label: 'Connect backend API adapter', state: 'done' },
+                  { label: 'Submit draft request', state: draftState === 'success' ? 'done' : 'active' },
+                  { label: 'Open generated preview', state: 'queued' },
+                ].map((step) => (
                   <li key={step.label} className={step.state}>
                     <span />
                     <p>{step.label}</p>
@@ -388,6 +592,19 @@ function App() {
       </section>
     </main>
   );
+}
+
+function formatApiError(error: unknown, fallback: string) {
+  const apiError = error as Partial<ApiError>;
+  if (apiError?.message) {
+    return apiError.status ? `${fallback} (${apiError.status}: ${apiError.message})` : `${fallback} (${apiError.message})`;
+  }
+
+  if (error instanceof Error) {
+    return `${fallback} (${error.message})`;
+  }
+
+  return fallback;
 }
 
 createRoot(document.getElementById('root')!).render(

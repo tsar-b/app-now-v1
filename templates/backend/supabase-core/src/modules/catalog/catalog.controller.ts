@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
-import { HttpError } from '../../core/errors';
-import { supabaseAdmin } from '../../db/supabaseAdmin';
+import { HttpError } from '../../core/errors.js';
+import { supabaseAdmin } from '../../db/supabaseAdmin.js';
 
 export async function initializeCatalog(_req: Request, res: Response) {
   const [subtypes, options, pricings, assets, timeSlots, serviceTypes] = await Promise.all([

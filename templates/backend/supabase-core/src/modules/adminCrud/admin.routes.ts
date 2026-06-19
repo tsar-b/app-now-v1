@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { requireAuth } from '../../middleware/authMiddleware';
-import { requireAdmin } from '../../middleware/adminMiddleware';
-import { deleteRow, listRows, updateRow } from './adminCrud.controller';
+import { requireAuth } from '../../middleware/authMiddleware.js';
+import { requireAdmin } from '../../middleware/adminMiddleware.js';
+import { deleteRow, listRows, updateRow } from './adminCrud.controller.js';
 
 export const adminRouter = Router();
 

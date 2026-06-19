@@ -1,13 +1,13 @@
 import type { Request, Response } from 'express';
-import { HttpError } from '../../core/errors';
-import { supabaseAdmin } from '../../db/supabaseAdmin';
+import { HttpError } from '../../core/errors.js';
+import { supabaseAdmin } from '../../db/supabaseAdmin.js';
 
 export async function createBooking(req: Request, res: Response) {
   const payload = {
     ...req.body,
     user_id: req.user!.id,
     legacy_user_id: req.user!.legacyUserId ?? null,
-    status: req.body.status ?? '대기'
+    status: req.body.status ?? 'pending',
   };
 
   const { data, error } = await supabaseAdmin.from('bookings').insert(payload).select('*').single();

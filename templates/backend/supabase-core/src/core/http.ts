@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { registerRoutes } from '../routes';
-import { errorHandler } from './errors';
+import { registerRoutes } from '../routes/index.js';
+import { errorHandler } from './errors.js';
 
 export function createHttpServer() {
   const app = express();
