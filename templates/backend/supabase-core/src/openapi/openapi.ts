@@ -72,6 +72,55 @@ export const openApiDocument = {
           }
         }
       }
+    },
+    '/api/app/initialize': {
+      get: {
+        security: [],
+        responses: {
+          '200': {
+            description: 'Versioned app bootstrap payload'
+          }
+        }
+      }
+    },
+    '/api/requests': {
+      post: {
+        responses: {
+          '201': {
+            description: 'Created request'
+          },
+          '409': {
+            description: 'Time slot is unavailable'
+          }
+        }
+      }
+    },
+    '/api/requests/history': {
+      get: {
+        responses: {
+          '200': {
+            description: 'Current user request history'
+          }
+        }
+      }
+    },
+    '/api/admin/{table}': {
+      get: {
+        parameters: [
+          { name: 'table', in: 'path', required: true, schema: { type: 'string' } },
+          { name: 'page', in: 'query', required: false, schema: { type: 'integer', minimum: 1 } },
+          { name: 'pageSize', in: 'query', required: false, schema: { type: 'integer', minimum: 1, maximum: 100 } },
+          { name: 'status', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'dateFrom', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'dateTo', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'search', in: 'query', required: false, schema: { type: 'string' } }
+        ],
+        responses: {
+          '200': {
+            description: 'Paginated admin resource list'
+          }
+        }
+      }
     }
   }
 };

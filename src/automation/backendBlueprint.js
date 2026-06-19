@@ -55,6 +55,7 @@ Generated from \`${relative(process.cwd(), config.paths.configPath)}\`.
 - Express routes validate params, query, and body before controllers.
 - Mutation endpoints should support \`Idempotency-Key\` once real payments, bookings, or orders exist.
 - OpenAPI is emitted early so frontend and backend can work from one contract.
+- SHC-derived modules are extracted as contracts: auth, admin CRUD, initialize, request workflow, Kakao address.
 
 ## Runtime Modules
 
@@ -65,6 +66,8 @@ Generated from \`${relative(process.cwd(), config.paths.configPath)}\`.
 - \`modules/users\`: profile and user-owned data.
 - \`modules/adminCrud\`: controlled admin table access.
 - \`modules/bookings\`: SHC-derived booking workflow template.
+- \`modules/requests\`: generalized service-booking/request workflow.
+- \`modules/appInitialize\`: versioned app bootstrap payload for frontend shells.
 - \`modules/integrations\`: Kakao and future provider APIs.
 - \`templates/backend/mongo-legacy\`: migration and source comparison only.
 
@@ -77,14 +80,18 @@ ${collections.join('\n')}
 2. Run generated RLS SQL before exposing tables through REST.
 3. Generate this blueprint with \`npm run backend:blueprint\`.
 4. Create typed Zod schemas for each collection's write surface.
-5. Add OpenAPI paths as routes become real.
-6. Add tests around auth, RLS-sensitive reads, admin writes, and idempotent mutations.
+5. Add request workflow tables and slot constraints for service-booking apps.
+6. Add OpenAPI paths as routes become real.
+7. Add tests around auth, RLS-sensitive reads, admin writes, and idempotent mutations.
 
 ## Done Means
 
 - \`/health\`, \`/ready\`, and \`/openapi.json\` respond.
+- \`/api/app/initialize\` returns a versioned bootstrap payload.
 - Auth, admin, and user-owned routes are separated.
 - No route spreads arbitrary request bodies into database writes.
+- Admin lists are paginated and filtered server-side.
+- Request booking has a database-level unique active slot constraint.
 - Logs include request IDs and do not print secrets.
 - App-specific policies are documented beside generated SQL.
 `;
@@ -108,6 +115,41 @@ function renderOpenApiStarter(config) {
         responses: {
           200: {
             description: 'Backend dependencies are configured'
+          }
+        }
+      }
+    },
+    '/api/app/initialize': {
+      get: {
+        security: [],
+        responses: {
+          200: {
+            description: 'Versioned app bootstrap payload'
+          }
+        }
+      }
+    },
+    '/api/requests': {
+      post: {
+        tags: ['requests'],
+        summary: 'Create service request',
+        responses: {
+          201: {
+            description: 'Created request'
+          },
+          409: {
+            description: 'Time slot is unavailable'
+          }
+        }
+      }
+    },
+    '/api/requests/history': {
+      get: {
+        tags: ['requests'],
+        summary: 'Current user request history',
+        responses: {
+          200: {
+            description: 'Request history'
           }
         }
       }

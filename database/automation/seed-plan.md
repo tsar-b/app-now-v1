@@ -22,3 +22,5 @@ Use this order unless foreign keys are added manually:
 - Run `001_create_tables.sql` first.
 - Run `002_enable_rls.sql` after confirming service-role-only migration behavior.
 - Add app-specific user-facing RLS policies later.
+- The reusable service-booking core creates `requests`, catalog tables, `request_options`, `pricing_tiers`, and `audit_logs`.
+- The generated `requests_unique_active_slot_idx` prevents double booking for active request statuses.

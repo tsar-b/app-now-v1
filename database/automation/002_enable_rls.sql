@@ -19,3 +19,57 @@ create policy "bookings_service_role_all"
   using (auth.role() = 'service_role')
   with check (auth.role() = 'service_role');
 
+alter table "audit_logs" enable row level security;
+
+drop policy if exists "audit_logs_service_role_all" on "audit_logs";
+create policy "audit_logs_service_role_all"
+  on "audit_logs"
+  for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+alter table "catalog_categories" enable row level security;
+
+drop policy if exists "catalog_categories_service_role_all" on "catalog_categories";
+create policy "catalog_categories_service_role_all"
+  on "catalog_categories"
+  for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+alter table "service_types" enable row level security;
+
+drop policy if exists "service_types_service_role_all" on "service_types";
+create policy "service_types_service_role_all"
+  on "service_types"
+  for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+alter table "pricing_tiers" enable row level security;
+
+drop policy if exists "pricing_tiers_service_role_all" on "pricing_tiers";
+create policy "pricing_tiers_service_role_all"
+  on "pricing_tiers"
+  for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+alter table "request_options" enable row level security;
+
+drop policy if exists "request_options_service_role_all" on "request_options";
+create policy "request_options_service_role_all"
+  on "request_options"
+  for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+alter table "requests" enable row level security;
+
+drop policy if exists "requests_service_role_all" on "requests";
+create policy "requests_service_role_all"
+  on "requests"
+  for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+

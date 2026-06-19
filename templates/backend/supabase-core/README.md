@@ -40,6 +40,8 @@ src/
     adminCrud/
     catalog/
     bookings/
+    requests/
+    appInitialize/
     integrations/
       kakao/
   routes/
@@ -71,5 +73,22 @@ The template starts with:
 - OpenAPI JSON endpoint
 - Zod validation helpers
 - optional idempotency keys for mutation endpoints
+- versioned `/api/app/initialize`
+- paginated/filterable Admin CRUD
+- audit logging for admin updates/deletes
+- reusable request-booking workflow module
 
 Keep `SUPABASE_SERVICE_ROLE_KEY` on the backend only. Frontend code should use Supabase anon access plus RLS policies, or call this backend for trusted operations.
+
+## SHC Extraction Alignment
+
+The ASUS extraction pass identified these backend priorities:
+
+- auth session shell
+- admin CRUD
+- app initialize/catalog endpoint
+- request-booking workflow
+- Korea address integration
+- migration and seed automation
+
+This template keeps those as clean AppNow modules instead of copied SHC files.

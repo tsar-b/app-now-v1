@@ -10,6 +10,7 @@ const EnvSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().default(120),
   REQUIRE_IDEMPOTENCY_KEY: z.coerce.boolean().default(false),
   IDEMPOTENCY_TTL_MS: z.coerce.number().default(86_400_000),
+  APP_INITIALIZE_CACHE_TTL_MS: z.coerce.number().default(60_000),
   LOG_LEVEL: z.string().default('info'),
   SUPABASE_URL: z.string().url(),
   SUPABASE_ANON_KEY: z.string().min(1),

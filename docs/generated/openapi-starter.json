@@ -39,6 +39,45 @@
         }
       }
     },
+    "/api/app/initialize": {
+      "get": {
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Versioned app bootstrap payload"
+          }
+        }
+      }
+    },
+    "/api/requests": {
+      "post": {
+        "tags": [
+          "requests"
+        ],
+        "summary": "Create service request",
+        "responses": {
+          "201": {
+            "description": "Created request"
+          },
+          "409": {
+            "description": "Time slot is unavailable"
+          }
+        }
+      }
+    },
+    "/api/requests/history": {
+      "get": {
+        "tags": [
+          "requests"
+        ],
+        "summary": "Current user request history",
+        "responses": {
+          "200": {
+            "description": "Request history"
+          }
+        }
+      }
+    },
     "/api/admin/users": {
       "get": {
         "tags": [

@@ -24,6 +24,7 @@ Backend creation usually loses time in repeated planning:
 - Which routes are public, user-owned, or admin-only?
 - Which tables should be exposed through admin CRUD?
 - Which OpenAPI paths need to exist first?
+- Which SHC-derived modules belong in backend templates instead of copied app files?
 
 The blueprint answers those from the same config AppNow already uses for export and upload.
 

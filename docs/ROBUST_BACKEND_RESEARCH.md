@@ -25,6 +25,7 @@ The backend is not shocking because it is huge. It is shocking because the borin
 - Mutation idempotency switch for booking/order/payment-like workflows.
 - OpenAPI output from the backend and generated starter OpenAPI from AppNow config.
 - Database automation, seed plan, and backend blueprint generated from the same config.
+- SHC-derived workflows extracted as clean modules: auth, admin CRUD, initialize, request booking, Kakao address.
 
 ## Backend Baseline
 
@@ -33,6 +34,7 @@ Every generated backend should start with:
 - `GET /health` for process liveness.
 - `GET /ready` for dependency readiness.
 - `GET /openapi.json` for contract inspection.
+- `GET /api/app/initialize` for versioned app bootstrap data.
 - env validation before server boot.
 - CORS allowlist instead of wildcard defaults.
 - Helmet headers.
